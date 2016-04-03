@@ -1,14 +1,18 @@
+logger = new Logger 'rocketchat:lib',
+	methods:
+		oauth_updated:
+			type: 'info'
+
 timer = undefined
-oAuthServicesUpdate = ->
+OAuthServicesUpdate = ->
 	Meteor.clearTimeout timer if timer?
 
 	timer = Meteor.setTimeout ->
-		services = RocketChat.models.Settings.find({_id: /^(Accounts_OAuth_|Accounts_OAuth_Custom_)[a-z_-]+$/i}).fetch()
+		services = RocketChat.models.Settings.find({_id: /^(Accounts_OAuth_|Accounts_OAuth_Custom_)[a-z0-9_-]+$/i}).fetch()
 		for service in services
-			console.log "Updating login service #{service._id}".blue
+			logger.oauth_updated service._id
 
 			serviceName = service._id.replace('Accounts_OAuth_', '')
-
 			if serviceName is 'Meteor'
 				serviceName = 'meteor-developer'
 
@@ -51,7 +55,7 @@ oAuthServicesUpdate = ->
 	, 2000
 
 
-oAuthServicesRemove = (_id) ->
+OAuthServicesRemove = (_id) ->
 	serviceName = _id.replace('Accounts_OAuth_Custom_', '')
 	ServiceConfiguration.configurations.remove {service: serviceName.toLowerCase()}
 
@@ -59,12 +63,12 @@ oAuthServicesRemove = (_id) ->
 RocketChat.models.Settings.find().observe
 	added: (record) ->
 		if /^Accounts_OAuth_.+/.test record._id
-			oAuthServicesUpdate()
+			OAuthServicesUpdate()
 
 	changed: (record) ->
 		if /^Accounts_OAuth_.+/.test record._id
-			oAuthServicesUpdate()
+			OAuthServicesUpdate()
 
 	removed: (record) ->
 		if /^Accounts_OAuth_Custom.+/.test record._id
-			oAuthServicesRemove record._id
+			OAuthServicesRemove record._id

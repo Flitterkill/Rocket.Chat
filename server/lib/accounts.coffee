@@ -1,18 +1,21 @@
 # Deny Account.createUser in client and set Meteor.loginTokenExpires
 accountsConfig = { forbidClientAccountCreation: true, loginExpirationInDays: RocketChat.settings.get 'Accounts_LoginExpiration' }
+Accounts.config accountsConfig
 
-if RocketChat.settings.get('Account_AllowedDomainsList')
-	domainWhiteList = _.map RocketChat.settings.get('Account_AllowedDomainsList').split(','), (domain) -> domain.trim()
-	accountsConfig.restrictCreationByEmailDomain = (email) ->
+RocketChat.settings.get 'Accounts_AllowedDomainsList', (_id, value) ->
+	domainWhiteList = _.map value.split(','), (domain) -> domain.trim()
+	restrictCreationByEmailDomain = if domainWhiteList.length == 1 then domainWhiteList[0] else (email) ->
 		ret = false
 		for domain in domainWhiteList
-			if email.match(domain + '$')
+			if email.match('@' + RegExp.escape(domain) + '$')
 				ret = true
 				break;
 
 		return ret
+	delete Accounts._options['restrictCreationByEmailDomain']
 
-Accounts.config accountsConfig
+	if not _.isEmpty value
+		Accounts.config({ restrictCreationByEmailDomain: restrictCreationByEmailDomain });
 
 Accounts.emailTemplates.siteName = RocketChat.settings.get 'Site_Name';
 Accounts.emailTemplates.from = "#{RocketChat.settings.get 'Site_Name'} <#{RocketChat.settings.get 'From_Email'}>";
@@ -80,11 +83,11 @@ Accounts.insertUserDoc = _.wrap Accounts.insertUserDoc, (insertUserDoc, options,
 
 	if roles.length is 0
 		# when inserting first user give them admin privileges otherwise make a regular user
-		firstUser = RocketChat.models.Users.findOne({ _id: { $ne: 'rocket.cat' }}, { sort: { createdAt: 1 }})
-		if firstUser?._id is _id
-			roles.push 'admin'
-		else
+		hasAdmin = RocketChat.models.Users.findOne({ roles: 'admin' }, {fields: {_id: 1}})
+		if hasAdmin?
 			roles.push 'user'
+		else
+			roles.push 'admin'
 
 	RocketChat.authz.addUserRoles(_id, roles)
 
@@ -101,7 +104,8 @@ Accounts.validateLoginAttempt (login) ->
 		throw new Meteor.Error 'inactive-user', TAPi18n.__ 'User_is_not_activated'
 		return false
 
-	if login.type is 'password' and RocketChat.settings.get('Accounts_EmailVerification') is true
+	# If user is admin, no need to check if e-mail is verified
+	if 'admin' not in login.user?.roles and login.type is 'password' and RocketChat.settings.get('Accounts_EmailVerification') is true
 		validEmail = login.user.emails.filter (email) ->
 			return email.verified is true
 

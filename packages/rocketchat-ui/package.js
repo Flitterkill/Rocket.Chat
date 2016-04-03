@@ -32,6 +32,7 @@ Package.onUse(function(api) {
 	api.use('kadira:flow-router', 'client');
 
 	// LIB FILES
+	api.addFiles('lib/getAvatarUrlFromUsername.coffee');
 	api.addFiles('lib/accountBox.coffee', 'client');
 	api.addFiles('lib/accounts.coffee', 'client');
 	api.addFiles('lib/avatar.coffee', 'client');
@@ -56,6 +57,7 @@ Package.onUse(function(api) {
 	api.addFiles('lib/sideNav.coffee', 'client');
 	api.addFiles('lib/tapi18n.coffee', 'client');
 	api.addFiles('lib/textarea-autogrow.js', 'client');
+	api.addFiles('lib/updateModeratorsAndOwners.js', 'client');
 
 	// LIB CORDOVA
 	api.addFiles('lib/cordova/facebook-login.coffee', 'client');
@@ -88,7 +90,6 @@ Package.onUse(function(api) {
 	api.addFiles('views/app/roomSearch.html', 'client');
 	api.addFiles('views/app/secretURL.html', 'client');
 	api.addFiles('views/app/userSearch.html', 'client');
-	api.addFiles('views/app/spotlight/mobileMessageMenu.html', 'client');
 	api.addFiles('views/app/spotlight/spotlight.html', 'client');
 	api.addFiles('views/app/videoCall/videoButtons.html', 'client');
 	api.addFiles('views/app/videoCall/videoCall.html', 'client');

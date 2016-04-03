@@ -34,13 +34,12 @@ session
 spacebars
 standard-minifiers
 tracker
-rocketchat:oauth2-server-config
 
-arunoda:streams
-rocketchat:lib
-
+rocketchat:api
+rocketchat:assets
 rocketchat:authorization
 rocketchat:autolinker
+rocketchat:cas
 rocketchat:channel-settings
 rocketchat:channel-settings-mail-messages
 rocketchat:colors
@@ -48,10 +47,17 @@ rocketchat:custom-oauth
 rocketchat:emojione
 rocketchat:favico
 rocketchat:file
+rocketchat:file-upload
 rocketchat:github-enterprise
 rocketchat:gitlab
 rocketchat:highlight
+rocketchat:highlight-words
+rocketchat:importer
+rocketchat:importer-hipchat
+rocketchat:importer-slack
+rocketchat:integrations
 rocketchat:ldap
+rocketchat:lib
 rocketchat:livechat
 rocketchat:logger
 rocketchat:mailer
@@ -59,9 +65,15 @@ rocketchat:markdown
 rocketchat:me
 rocketchat:mentions
 rocketchat:mentions-flextab
+rocketchat:message-attachments
 rocketchat:message-pin
 rocketchat:message-star
+rocketchat:migrations
+rocketchat:oauth2-server-config
 rocketchat:oembed
+rocketchat:otr
+rocketchat:push-notifications
+rocketchat:reactions
 rocketchat:slashcommands-invite
 rocketchat:slashcommands-join
 rocketchat:slashcommands-kick
@@ -70,6 +82,7 @@ rocketchat:slashcommands-mute
 rocketchat:spotify
 rocketchat:statistics
 rocketchat:theme
+rocketchat:tooltip
 rocketchat:tutum
 rocketchat:ui
 rocketchat:ui-account
@@ -93,6 +106,7 @@ konecty:multiple-instances-status
 konecty:nrr
 konecty:user-presence
 
+arunoda:streams
 chrismbeckett:toastr
 dispatch:run-as-user
 francocatena:status
@@ -102,7 +116,6 @@ jparker:gravatar
 kadira:blaze-layout
 kadira:flow-router
 kenton:accounts-sandstorm
-kevohagan:sweetalert
 mizzao:autocomplete
 mizzao:timesync
 momentjs:moment
@@ -111,25 +124,21 @@ mrt:reactive-store
 mystor:device-detection
 nimble:restivus
 nooitaf:colors
-ostrio:cookies@2.0.1
+ostrio:cookies
 pauli:accounts-linkedin
 perak:codemirror
-percolate:migrations
 percolate:synced-cron
 raix:handlebar-helpers
 raix:push
 raix:ui-dropped-event
 steffo:meteor-accounts-saml
-tap:i18n
 tmeasday:crypto-md5
-tmeasday:errors
 todda00:friendly-slugs
 underscorestring:underscore.string
 yasaricli:slugify
 yasinuslu:blaze-meta
 # sanjo:jasmine
 # velocity:html-reporter
-rocketchat:assets
-rocketchat:integrations
-rocketchat:message-attachments
-rocketchat:api
+smoral:sweetalert
+rocketchat:iframe-login
+rocketchat:katex

@@ -8,7 +8,7 @@ class Markdown
 		msg = message
 
 		if not _.isString message
-			if _.trim message.html
+			if _.trim message?.html
 				msg = message.html
 			else
 				return message
@@ -44,7 +44,7 @@ class Markdown
 			msg = msg.replace(/^## (([\w\d-_\/\*\.,\\] ?)+)/gm, '<h2>$1</h2>')
 
 			# Support # Text for h3
-			msg = msg.replace(/^### (([\w\d-_\/\*\.,\\] ?)+)/gm, '<h3>$1</h4>')
+			msg = msg.replace(/^### (([\w\d-_\/\*\.,\\] ?)+)/gm, '<h3>$1</h3>')
 
 			# Support # Text for h4
 			msg = msg.replace(/^#### (([\w\d-_\/\*\.,\\] ?)+)/gm, '<h4>$1</h4>')
@@ -57,6 +57,12 @@ class Markdown
 
 		# Support ~text~ to strike through text
 		msg = msg.replace(/(^|&gt;|[ >_*`])\~{1,2}([^~\r\n]+)\~{1,2}([<_*`]|\B|\b|$)/gm, '$1<span class="copyonly">~</span><strike>$2</strike><span class="copyonly">~</span>$3')
+
+		# Support for block quote
+		# >>>
+		# Text
+		# <<<
+		msg = msg.replace(/(?:&gt;){3}\n+([\s\S]*?)\n+(?:&lt;){3}/g, '<blockquote><span class="copyonly">&gt;&gt;&gt;</span>$1<span class="copyonly">&lt;&lt;&lt;</span></blockquote>')
 
 		# Support >Text for quote
 		msg = msg.replace(/^&gt;(.*)$/gm, '<blockquote><span class="copyonly">&gt;</span>$1</blockquote>')

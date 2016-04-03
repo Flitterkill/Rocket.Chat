@@ -1,27 +1,35 @@
 sizeOf = Npm.require 'image-size'
+mime = Npm.require 'mime-types'
 
+mime.extensions['image/vnd.microsoft.icon'] = ['ico']
 
 @RocketChatAssetsInstance = new RocketChatFile.GridFS
 	name: 'assets'
 
 
 assets =
+	'logo':
+		label: 'logo (svg, png)'
+		defaultUrl: 'images/logo/logo.svg?v=3'
+		constraints:
+			type: 'image'
+			extensions: ['svg', 'png']
+			width: undefined
+			height: undefined
 	'favicon.ico':
 		label: 'favicon.ico'
 		defaultUrl: 'favicon.ico?v=3'
 		constraints:
 			type: 'image'
-			contentType: 'image/vnd.microsoft.icon'
-			extention: 'ico'
+			extensions: ['ico']
 			width: undefined
 			height: undefined
 	'favicon.svg':
 		label: 'favicon.svg'
-		defaultUrl: '/images/logo/icon.svg?v=3'
+		defaultUrl: 'images/logo/icon.svg?v=3'
 		constraints:
 			type: 'image'
-			contentType: 'image/svg+xml'
-			extention: 'svg'
+			extensions: ['svg']
 			width: undefined
 			height: undefined
 	'favicon_64.png':
@@ -29,8 +37,7 @@ assets =
 		defaultUrl: 'images/logo/favicon-64x64.png?v=3'
 		constraints:
 			type: 'image'
-			contentType: 'image/png'
-			extention: 'png'
+			extensions: ['png']
 			width: 64
 			height: 64
 	'favicon_96.png':
@@ -38,8 +45,7 @@ assets =
 		defaultUrl: 'images/logo/favicon-96x96.png?v=3'
 		constraints:
 			type: 'image'
-			contentType: 'image/png'
-			extention: 'png'
+			extensions: ['png']
 			width: 96
 			height: 96
 	'favicon_128.png':
@@ -47,8 +53,7 @@ assets =
 		defaultUrl: 'images/logo/favicon-128x128.png?v=3'
 		constraints:
 			type: 'image'
-			contentType: 'image/png'
-			extention: 'png'
+			extensions: ['png']
 			width: 128
 			height: 128
 	'favicon_192.png':
@@ -56,8 +61,7 @@ assets =
 		defaultUrl: 'images/logo/android-chrome-192x192.png?v=3'
 		constraints:
 			type: 'image'
-			contentType: 'image/png'
-			extention: 'png'
+			extensions: ['png']
 			width: 192
 			height: 192
 	'favicon_256.png':
@@ -65,8 +69,7 @@ assets =
 		defaultUrl: 'images/logo/favicon-256x256.png?v=3'
 		constraints:
 			type: 'image'
-			contentType: 'image/png'
-			extention: 'png'
+			extensions: ['png']
 			width: 256
 			height: 256
 
@@ -104,8 +107,8 @@ Meteor.methods
 		if not assets[asset]?
 			throw new Meteor.Error "Invalid_asset"
 
-		if contentType isnt assets[asset].constraints.contentType
-			throw new Meteor.Error "Invalid_file_type"
+		if mime.extension(contentType) not in assets[asset].constraints.extensions
+			throw new Meteor.Error "Invalid_file_type", contentType
 
 		file = new Buffer(binaryContent, 'binary')
 
@@ -130,7 +133,7 @@ Meteor.methods
 		return
 
 
-WebApp.connectHandlers.use '/assets/', (req, res, next) ->
+WebApp.connectHandlers.use '/assets/', Meteor.bindEnvironment (req, res, next) ->
 	params =
 		asset: decodeURIComponent(req.url.replace(/^\//, '').replace(/\?.*$/, ''))
 

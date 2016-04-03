@@ -33,7 +33,7 @@ Template.body.onRendered ->
 		d = document
 		s = 'script'
 		l = 'dataLayer'
-		i = RocketChat.settings.get 'API_Analytics'
+		i = RocketChat.settings.get 'GoogleTagManager_id'
 		if Match.test(i, String) and i.trim() isnt ''
 			c.stop()
 			do (w,d,s,l,i) ->
@@ -125,6 +125,12 @@ Template.main.helpers
 			$('html').addClass("scroll").removeClass("noscroll")
 			return false
 
+	useIframe: ->
+		return RocketChat.iframeLogin.reactiveEnabled.get()
+
+	iframeUrl: ->
+		return RocketChat.iframeLogin.reactiveIframeUrl.get()
+
 	subsReady: ->
 		return not Meteor.userId()? or (FlowRouter.subsReady('userData', 'activeUsers'))
 
@@ -142,6 +148,15 @@ Template.main.helpers
 	flexOpenedRTC2: ->
 		console.log 'layout.helpers flexOpenedRTC2' if window.rocketDebug
 		return 'layout2' if (Session.get('rtcLayoutmode') > 1)
+
+	requirePasswordChange: ->
+		return Meteor.user()?.requirePasswordChange is true
+
+	CustomScriptLoggedOut: ->
+		RocketChat.settings.get 'Custom_Script_Logged_Out'
+
+	CustomScriptLoggedIn: ->
+		RocketChat.settings.get 'Custom_Script_Logged_In'
 
 
 Template.main.events
@@ -218,3 +233,11 @@ Template.main.onRendered ->
 		$('html').addClass "rtl"
 	else
 		$('html').removeClass "rtl"
+
+	$('#initial-page-loading').remove()
+
+	window.addEventListener 'focus', ->
+		Meteor.setTimeout ->
+			if not $(':focus').is('INPUT,TEXTAREA')
+				$('.input-message').focus()
+		, 100

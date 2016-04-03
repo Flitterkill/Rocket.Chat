@@ -35,7 +35,7 @@ Template.chatRoomItem.helpers
 		return RocketChat.roomTypes.getRouteLink @t, @
 
 Template.chatRoomItem.rendered = ->
-	if not (FlowRouter.getParam('_id')? and FlowRouter.getParam('_id') is this.data.rid) and not this.data.ls
+	if not (FlowRouter.getParam('_id')? and FlowRouter.getParam('_id') is this.data.rid) and not this.data.ls and this.data.alert is true
 		KonchatNotification.newRoom(this.data.rid)
 
 Template.chatRoomItem.events
@@ -47,18 +47,68 @@ Template.chatRoomItem.events
 		e.stopPropagation()
 		e.preventDefault()
 
-		if FlowRouter.getRouteName() in ['channel', 'group', 'direct'] and Session.get('openedRoom') is this.rid
-			FlowRouter.go 'home'
+		rid = this.rid
+		name = this.name
 
-		Meteor.call 'hideRoom', this.rid
+		warnText = switch
+			when this.t == 'c' then 'Hide_Room_Warning'
+			when this.t == 'p' then 'Hide_Group_Warning'
+			when this.t == 'd' then 'Hide_Private_Warning'
+
+
+		swal {
+			title: t('Are_you_sure')
+			text: t(warnText, name)
+			type: 'warning'
+			showCancelButton: true
+			confirmButtonColor: '#DD6B55'
+			confirmButtonText: t('Yes_hide_it')
+			cancelButtonText: t('Cancel')
+			closeOnConfirm: true
+			html: false
+		}, ->
+			if FlowRouter.getRouteName() in ['channel', 'group', 'direct'] and Session.get('openedRoom') is rid
+				FlowRouter.go 'home'
+
+			Meteor.call 'hideRoom', rid
 
 	'click .leave-room': (e) ->
 		e.stopPropagation()
 		e.preventDefault()
 
-		if FlowRouter.getRouteName() in ['channel', 'group', 'direct'] and Session.get('openedRoom') is this.rid
-			FlowRouter.go 'home'
+		rid = this.rid
+		name = this.name
 
-		RoomManager.close this.rid
+		warnText = switch
+			when this.t == 'c' then 'Leave_Room_Warning'
+			when this.t == 'p' then 'Leave_Group_Warning'
+			when this.t == 'd' then 'Leave_Private_Warning'
+		swal {
+			title: t('Are_you_sure')
+			text: t(warnText, name)
+			type: 'warning'
+			showCancelButton: true
+			confirmButtonColor: '#DD6B55'
+			confirmButtonText: t('Yes_leave_it')
+			cancelButtonText: t('Cancel')
+			closeOnConfirm: false
+			html: false
+		}, (isConfirm) ->
+			if isConfirm
+				Meteor.call 'leaveRoom', rid, (err) ->
+					if err
+						swal {
+							title: t('Warning')
+							text: t(err.reason)
+							type: 'warning'
+							html: false
+						}
 
-		Meteor.call 'leaveRoom', this.rid
+					else
+						swal.close()
+						if FlowRouter.getRouteName() in ['channel', 'group', 'direct'] and Session.get('openedRoom') is rid
+							FlowRouter.go 'home'
+
+						RoomManager.close rid
+			else
+				swal.close()

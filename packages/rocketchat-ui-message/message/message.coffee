@@ -5,6 +5,9 @@ Template.message.helpers
 		return 'false' if this.groupable is false
 	isSequential: ->
 		return 'sequential' if this.groupable isnt false
+	avatarFromUsername: ->
+		if this.avatar? and this.avatar[0] is '@'
+			return this.avatar.replace(/^@/, '')
 	getEmoji: (emoji) ->
 		return emojione.toImage emoji
 	own: ->
@@ -14,7 +17,7 @@ Template.message.helpers
 	chatops: ->
 		return 'chatops-message' if this.u?.username is RocketChat.settings.get('Chatops_Username')
 	time: ->
-		return moment(this.ts).format('HH:mm')
+		return moment(this.ts).format('LT')
 	date: ->
 		return moment(this.ts).format('LL')
 	isTemp: ->
@@ -32,7 +35,7 @@ Template.message.helpers
 
 	editTime: ->
 		if Template.instance().wasEdited
-			return moment(@editedAt).format('LL hh:mma') #TODO profile pref for 12hr/24hr clock?
+			return moment(@editedAt).format('LL LT') #TODO profile pref for 12hr/24hr clock?
 	editedBy: ->
 		return "" unless Template.instance().wasEdited
 		# try to return the username of the editor,
@@ -74,41 +77,56 @@ Template.message.helpers
 
 		return true
 
+	reactions: ->
+		msgReactions = []
+
+		for emoji, reaction of @reactions
+			total = reaction.usernames.length
+			usernames = reaction.usernames.sort().slice(0, 15)
+
+			if total > 15
+				usernames.push t('And_more', { length: total - 15 })
+
+			msgReactions.push
+				emoji: emoji
+				count: reaction.usernames.length
+				usernames: usernames
+
+		return msgReactions
+
+	hideReactions: ->
+		return 'hidden' if _.isEmpty(@reactions)
+
 Template.message.onCreated ->
 	msg = Template.currentData()
 
 	@wasEdited = msg.editedAt? and not RocketChat.MessageTypes.isSystemMessage(msg)
 
 	@body = do ->
+		isSystemMessage = RocketChat.MessageTypes.isSystemMessage(msg)
 		messageType = RocketChat.MessageTypes.getType(msg)
 		if messageType?.render?
-			return messageType.render(message)
+			msg = messageType.render(msg)
 		else if messageType?.template?
 			# render template
 		else if messageType?.message?
 			if messageType.data?(msg)?
-				return TAPi18n.__(messageType.message, messageType.data(msg))
+				msg = TAPi18n.__(messageType.message, messageType.data(msg))
 			else
-				return TAPi18n.__(messageType.message)
+				msg = TAPi18n.__(messageType.message)
 		else
 			if msg.u?.username is RocketChat.settings.get('Chatops_Username')
 				msg.html = msg.msg
-				message = RocketChat.callbacks.run 'renderMentions', msg
+				msg = RocketChat.callbacks.run 'renderMentions', msg
 				# console.log JSON.stringify message
-				return msg.html
+				msg = msg.html
+			else
+				msg = renderMessageBody msg
 
-			msg.html = msg.msg
-			if _.trim(msg.html) isnt ''
-				msg.html = _.escapeHTML msg.html
-
-			message = RocketChat.callbacks.run 'renderMessage', msg
-			if message.tokens?.length > 0
-				for token in message.tokens
-					message.html = message.html.replace token.token, token.text
-
-			# console.log JSON.stringify message
-			msg.html = message.html.replace /\n/gm, '<br/>'
-			return msg.html
+		if isSystemMessage
+			return RocketChat.Markdown msg
+		else
+			return msg
 
 Template.message.onViewRendered = (context) ->
 	view = this

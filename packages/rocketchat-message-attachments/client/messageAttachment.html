@@ -25,7 +25,12 @@
 
 			{{#if title}}
 				{{#if title_link}}
-					<div class="attachment-title"><a href="{{fixCordova title_link}}" target="_blank">{{title}}</a></div>
+					<div class="attachment-title">
+						<a href="{{fixCordova title_link}}" target="_blank">{{title}}</a>
+						{{#if title_link_download}}
+							<a class="icon-download attachment-download-icon" href="{{fixCordova title_link}}" target="_blank" download=""></a>
+						{{/if}}
+					</div>
 				{{else}}
 					<div class="attachment-title">{{title}}</div>
 				{{/if}}
@@ -40,7 +45,7 @@
 
 				{{#if text}}
 					<div class="attachment-flex-column-grow attachment-text">
-						{{{RocketChatMarkdown text}}}
+						{{{parsedText}}}
 					</div>
 				{{/if}}
 			</div>
@@ -73,7 +78,7 @@
 
 			{{#if video_url}}
 				<div class="attachment-video">
-					<video controls class="inline-video" height="300">
+					<video controls class="inline-video">
 						<source src="{{fixCordova video_url}}" type="{{video_type}}">
 						Your browser does not support the video element.
 					</video>
@@ -86,7 +91,7 @@
 						{{#unless short}}
 							<div class="attachment-field">
 								<div class="attachment-field-title">{{title}}</div>
-								{{value}}
+								{{{RocketChatMarkdown value}}}
 							</div>
 						{{/unless}}
 					{{/each}}
@@ -94,7 +99,7 @@
 						{{#if short}}
 							<div class="attachment-field attachment-field-short">
 								<div class="attachment-field-title">{{title}}</div>
-								{{value}}
+								{{{RocketChatMarkdown value}}}
 							</div>
 						{{/if}}
 					{{/each}}

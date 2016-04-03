@@ -3,31 +3,16 @@ Template.adminUsers.helpers
 		return Template.instance().ready?.get()
 	users: ->
 		return Template.instance().users()
-	flexOpened: ->
-		return 'opened' if RocketChat.TabBar.isFlexOpen()
-	arrowPosition: ->
-		return 'left' unless RocketChat.TabBar.isFlexOpen()
-	userData: ->
-		return Meteor.users.findOne Session.get 'adminSelectedUser'
-	userChannels: ->
-		return ChatSubscription.find({ "u._id": Session.get 'adminSelectedUser' }, { fields: { rid: 1, name: 1, t: 1 }, sort: { t: 1, name: 1 } }).fetch()
 	isLoading: ->
 		return 'btn-loading' unless Template.instance().ready?.get()
 	hasMore: ->
 		return Template.instance().limit?.get() is Template.instance().users?().length
-
 	flexTemplate: ->
 		return RocketChat.TabBar.getTemplate()
-
 	flexData: ->
 		return RocketChat.TabBar.getData()
-
-	adminClass: ->
-		return 'admin' if RocketChat.authz.hasRole(Meteor.userId(), 'admin')
-
 	username: ->
 		return '@' + @username if @username?
-
 	emailAddress: ->
 		return _.map(@emails, (e) -> e.address).join(', ')
 
@@ -41,9 +26,21 @@ Template.adminUsers.onCreated ->
 		groups: ['adminusers', 'adminusers-selected'],
 		id: 'invite-user',
 		i18nTitle: 'Invite_Users',
-		icon: 'icon-plus',
+		icon: 'icon-paper-plane',
 		template: 'adminInviteUser',
 		order: 1
+	})
+
+	RocketChat.TabBar.addButton({
+		groups: ['adminusers', 'adminusers-selected'],
+		id: 'add-user',
+		i18nTitle: 'Add_User',
+		icon: 'icon-plus',
+		template: 'adminUserEdit',
+		openClick: (e, t) ->
+			RocketChat.TabBar.setData()
+			return true
+		order: 2
 	})
 
 	RocketChat.TabBar.addButton({
@@ -52,7 +49,7 @@ Template.adminUsers.onCreated ->
 		i18nTitle: 'User_Info',
 		icon: 'icon-user',
 		template: 'adminUserInfo',
-		order: 2
+		order: 3
 	})
 
 	@autorun ->
@@ -60,15 +57,6 @@ Template.adminUsers.onCreated ->
 		limit = instance.limit.get()
 		subscription = instance.subscribe 'fullUserData', filter, limit
 		instance.ready.set subscription.ready()
-
-	@autorun ->
-		if Session.get 'adminSelectedUser'
-			channelSubscription = instance.subscribe 'userChannels', Session.get 'adminSelectedUser'
-			RocketChat.TabBar.setData Meteor.users.findOne Session.get 'adminSelectedUser'
-
-			RocketChat.TabBar.showGroup 'adminusers-selected'
-		else
-			RocketChat.TabBar.showGroup 'adminusers'
 
 	@users = ->
 		filter = _.trim instance.filter?.get()
@@ -104,10 +92,11 @@ Template.adminUsers.events
 
 	'click .user-info': (e) ->
 		e.preventDefault()
-		Session.set 'adminSelectedUser', @_id
-		Session.set 'showUserInfo', Meteor.users.findOne(@_id)?.username or true
+		Session.set 'showUserInfo', @_id
 		RocketChat.TabBar.setTemplate 'adminUserInfo'
+		RocketChat.TabBar.setData Meteor.users.findOne @_id
 		RocketChat.TabBar.openFlex()
+		RocketChat.TabBar.showGroup 'adminusers-selected'
 
 	'click .info-tabs a': (e) ->
 		e.preventDefault()

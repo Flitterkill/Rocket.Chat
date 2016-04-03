@@ -14,8 +14,5 @@ Package.onUse(function(api) {
 	]);
 
 	api.addFiles('cors.coffee', 'server');
-});
-
-Package.onTest(function(api) {
-
+	api.addFiles('common.coffee');
 });
